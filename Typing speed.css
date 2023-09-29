@@ -1,0 +1,112 @@
+html {
+    height: 100%;
+}
+
+body {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.main {
+    position: relative;
+    display: grid;
+}
+
+.topBar {
+    position: relative;
+    display: grid;
+    grid-auto-flow: column;
+    align-items: end;
+    bottom: 0.5vw;
+}
+
+.timer {
+    position: relative;
+    display: flex;
+    justify-self: start;
+    column-gap: 0.5vw;
+}
+
+.clock {
+    width: 1.8vw;
+    height: 2vw;
+}
+
+.time {
+    align-self: center;
+    font-size: 1.2vw;
+    font-weight: bold;
+}
+
+.title {
+    font-size: 1.2vw;
+    font-weight: bold;
+}
+
+.restart {
+    position: relative;
+    display: flex;
+    width: 2vw;
+    height: 2vw;
+    justify-self: end;
+    align-items: center;
+    justify-content: center;
+}
+
+.arrow {
+    width: 1.5vw;
+    height: 1.5vw;
+}
+
+.modelText, .newText {
+    font-family: 'Times New Roman', Times, serif;
+    overflow: hidden;
+    font-size: 1.2vw;
+    resize: none;
+}
+
+@media (max-width: 1300px) and (min-width: 701px) {
+    .clock {
+        width: 2.25vw;
+        height: 2.5vw;
+    }
+    .time,.title {
+        font-size: 1.7vw;
+    }
+    .restart {
+        width: 2.5vw;
+        height: 2.5vw;
+    }
+    .arrow {
+        width: 1.9vw;
+        height: 1.9vw;
+    }
+    .modelText, .newText {
+        font-size: 1.7vw;
+    }   
+}
+
+@media (max-width: 700px) {
+    .clock {
+        width: 2.9vw;
+        height: 3.2vw;
+    }
+    .time,.title {
+        font-size: 2.2vw;
+    }
+
+    .restart {
+        width: 3vw;
+        height: 3vw;
+    }
+    .arrow {
+        width: 2.3vw;
+        height: 2.3vw;
+    }
+    .modelText, .newText {
+        font-size: 2.2vw;
+    }   
+}
