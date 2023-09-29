@@ -37,13 +37,6 @@ body {
 
 .time {
     align-self: center;
-    font-size: 1.2vw;
-    font-weight: bold;
-}
-
-.title {
-    font-size: 1.2vw;
-    font-weight: bold;
 }
 
 .restart {
@@ -64,17 +57,34 @@ body {
 .modelText, .newText {
     font-family: 'Times New Roman', Times, serif;
     overflow: hidden;
-    font-size: 1.2vw;
     resize: none;
+}
+
+.pop-up {
+    position: absolute;
+    background-color: burlywood;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    row-gap: 0.8vw;
+    width: 27vw;
+    height: 10vw;
+    visibility: hidden;
+}
+
+.time, .title, .modelText, .newText, .pop-up, .backToGame {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 1.2vw;
+}
+
+.time, .title, .pop-up, .backToGame {
+    font-weight: bold;
 }
 
 @media (max-width: 1300px) and (min-width: 701px) {
     .clock {
         width: 2.25vw;
         height: 2.5vw;
-    }
-    .time,.title {
-        font-size: 1.7vw;
     }
     .restart {
         width: 2.5vw;
@@ -84,9 +94,13 @@ body {
         width: 1.9vw;
         height: 1.9vw;
     }
-    .modelText, .newText {
+    .pop-up {
+        width: 40vw;
+        height: 15vw;
+    }
+    .time, .title, .modelText, .newText, .pop-up, .backToGame {
         font-size: 1.7vw;
-    }   
+    }
 }
 
 @media (max-width: 700px) {
@@ -94,10 +108,6 @@ body {
         width: 2.9vw;
         height: 3.2vw;
     }
-    .time,.title {
-        font-size: 2.2vw;
-    }
-
     .restart {
         width: 3vw;
         height: 3vw;
@@ -105,8 +115,12 @@ body {
     .arrow {
         width: 2.3vw;
         height: 2.3vw;
+    }  
+    .pop-up {
+        width: 50vw;
+        height: 20vw;
     }
-    .modelText, .newText {
+    .time, .title, .modelText, .newText, .pop-up, .backToGame {
         font-size: 2.2vw;
-    }   
+    }
 }
