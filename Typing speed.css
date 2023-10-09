@@ -54,10 +54,12 @@ body {
     height: 1.5vw;
 }
 
-.modelText, .newText {
-    font-family: 'Times New Roman', Times, serif;
-    overflow: hidden;
-    resize: none;
+.modelText, .userText {
+    height: 3vw;
+    line-height: 1.5vw;
+    width: 50vw;
+    border: solid black thin;
+    overflow-y:hidden;
 }
 
 .pop-up {
@@ -72,13 +74,21 @@ body {
     visibility: hidden;
 }
 
-.time, .title, .modelText, .newText, .pop-up, .backToGame {
+.time, .title, .modelText, .userText, .pop-up, .backToGame {
     font-family: 'Times New Roman', Times, serif;
     font-size: 1.2vw;
 }
 
 .time, .title, .pop-up, .backToGame {
     font-weight: bold;
+}
+
+.wrong {
+    color: red;
+}
+
+.correct {
+    color: green;
 }
 
 @media (max-width: 1300px) and (min-width: 701px) {
@@ -98,8 +108,13 @@ body {
         width: 40vw;
         height: 15vw;
     }
-    .time, .title, .modelText, .newText, .pop-up, .backToGame {
-        font-size: 1.7vw;
+    .modelText, .userText {
+        height: 4vw;
+        line-height: 2vw;
+        width: 60vw;
+    }
+    .time, .title, .modelText, .userText, .pop-up, .backToGame {
+        font-size: 2vw;
     }
 }
 
@@ -120,7 +135,12 @@ body {
         width: 50vw;
         height: 20vw;
     }
-    .time, .title, .modelText, .newText, .pop-up, .backToGame {
-        font-size: 2.2vw;
+    .modelText, .userText {
+        height: 5vw;
+        line-height: 2.5vw;
+        width: 70vw;
+    }
+    .time, .title, .modelText, .userText, .pop-up, .backToGame {
+        font-size: 2.5vw;
     }
 }
