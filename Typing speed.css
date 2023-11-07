@@ -55,11 +55,11 @@ body {
 }
 
 .modelText, .userText {
-    height: 3vw;
     line-height: 1.5vw;
     width: 50vw;
     border: solid black thin;
-    overflow-y:hidden;
+    overflow-y: scroll;
+    user-select: none;
 }
 
 .pop-up {
@@ -109,7 +109,6 @@ body {
         height: 15vw;
     }
     .modelText, .userText {
-        height: 4vw;
         line-height: 2vw;
         width: 60vw;
     }
@@ -136,7 +135,6 @@ body {
         height: 20vw;
     }
     .modelText, .userText {
-        height: 5vw;
         line-height: 2.5vw;
         width: 70vw;
     }
