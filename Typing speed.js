@@ -1,13 +1,13 @@
 let modelText = document.querySelector(".modelText");
 let userText = document.querySelector(".userText");
-let textArray = new Array(1214), wordDelimiter = [-1];
-let second = 60, wordsCnt = 0, correctWords = 0, ind = 0, prevInd = 0;
+let textArray = new Array(1214), wordLimit = [-1], newWordLimit = [-1];
+let second = 60, wordsCnt = 0, correctWords = 0, deletedChar = '', modelOffset = 0;
 let timer, text;
-let start = false;
+let start = false, doubleSpace = false;
 
 addText();
 
-//The model text is formatted as an array of span elements and displayed in the upper box //
+//The model text is formatted as an array of span elements and displayed in the upper box. 
 function addText() {
     text = "I live in a house near the mountains. I have two brothers and one sister, and I was born last. My father teaches history, and my mother is a nurse at a big hospital. " + 
     "My brothers are very smart and work hard in school. My sister is a nervous girl, but she is very kind. My grandmother also lives with us. She came from Italy when I was two years old. " +
@@ -21,10 +21,10 @@ function addText() {
         textArray[i].innerText = text[i];
         modelText.appendChild(textArray[i]);
         if (/\s/.test(text[i])) {
-            wordDelimiter.push(i);
+            wordLimit.push(i);
         }
     }
-    wordDelimiter.push(textArray.length);
+    wordLimit.push(textArray.length);
 }
 
 //The game starts when the first character was written in the user text box.
@@ -43,82 +43,192 @@ function runTime() {
         prefSec = '0';
     }
     document.querySelector(".time").innerText = "00:" + prefSec + second;
-    if (second === 0) {
+    if (second === 50) {
         endGame();
     }
 }
 
-/*This function checks the correctness of the text wrote by the user by comparing each new written character with 
-the character located on the same index in the model text. If they are the same, the character from the model text 
-becomes green. If not, it becomes red. If a character is erased from the written text, the already coloured
-character from the model text located on the right side of the current cursor position becomes black*/
-function checkLetter() {
-    ind = userText.innerText.length - 1;
-    if (prevInd > ind && ind <= text.length - 1) {
-        textArray[prevInd].classList.remove("wrong");
-        textArray[prevInd].classList.remove("correct"); 
-    }
-    if (ind >= 0 && ind <= text.length - 1 && userText.innerText[ind] != textArray[ind].innerText) {
-        textArray[ind].classList.remove("correct"); 
-        textArray[ind].classList.add("wrong"); 
-    } else if (ind >= 0 && ind <= text.length - 1 && userText.innerText[ind] == textArray[ind].innerText) {
-        textArray[ind].classList.add("correct"); 
-    }
-    prevInd = ind;
+/*The previously deleted character is returned. It is relevant to know
+if the previously deleted character was a white space or not. */
+function getDeletedChar() {
+    deletedChar = userText.value[userText.value.length - 1];
 }
 
-/*This function compares each new written word with the correspondent word from the model text. 
-If the written word is correct, it will receive a green background. If it's wrong, it will receive a red background.
-If the user erases characters from a word, the background of that word disappears. The function also
-counts the written words and the correct words*/
-function checkWord() {
-    let colour = " ", isCorrect = true;
-    if (wordDelimiter[wordsCnt + 1] === ind + 1) {
+/*With each new white space added, we mark the end of the current written word.
+If a white space is deleted, it is also deleted from the array.*/
+function setNewWordLimits(e) {
+    let ind = userText.value.length - 1;
+    if (e.inputType === "insertText" && /\s/.test(userText.value[ind])) {
+        newWordLimit.push(ind);
+    } else if (e.inputType === "deleteContentBackward" && /\s/.test(deletedChar)) {
+        newWordLimit.pop();
+    }
+}
+
+/*With each character written after a white space, the number of written words is incremented.*/
+function incrementWords(e) {
+    let input = userText.value, ind = userText.value.length - 1;
+    if (e.inputType === "insertText" && !/\s/.test(input[ind]) && (ind === 0 || /\s/.test(input[ind - 1]))) {
         ++wordsCnt;
-        if (userText.innerText.substring(wordDelimiter[wordsCnt - 1], wordDelimiter[wordsCnt]) == text.substring(wordDelimiter[wordsCnt - 1], wordDelimiter[wordsCnt])) {
-            colour = "#d6f0b6";
-            ++correctWords;
-        } else {
-            colour = "#fac8c8";
-            isCorrect = false;
-            if (correctWords === wordsCnt) {
-                --correctWords;
-            }
+    } 
+}
+
+//The function prevents the user to introduce two consecutive double white spaces.
+function preventDoubleSpace(e) {
+    let input = userText.value, ind = userText.value.length - 1;
+    if (e.inputType === "insertText" && /\s/.test(input[ind]) && (ind === 0 || /\s/.test(input[ind - 1]))) {
+        --ind;
+        userText.value = userText.value.slice(0, -1);
+        doubleSpace = true;
+    }
+    doubleSpace = false;
+}
+
+/*If the user introduces a white space, the index is automatically moved just before the new word.This also means adding 
+additional white space at the end of the user text so that its index gets before the new word. Also if the user deletes a
+white space and there is an additional white space gap until the next character, the entire gap is deleted.*/
+function jumpIndex(e) {
+    let ind = userText.value.length - 1, lg = ind - newWordLimit[wordsCnt - 1], modelInd = wordLimit[wordsCnt - 1] + lg;
+    if (e.inputType === "insertText" && /\s/.test(userText.value[ind]) && (modelInd < wordLimit[wordsCnt] || ind < wordLimit[wordsCnt])) {
+        while (modelInd < wordLimit[wordsCnt]) {
+            ++modelInd;
+            ++modelOffset;
         }
+        if (ind < wordLimit[wordsCnt]) {
+            while (ind < wordLimit[wordsCnt]) {
+                userText.value += " ";
+                ++ind;
+            }
+            newWordLimit[wordsCnt] = ind;
+        }
+    } else if (e.inputType === "deleteContentBackward" && /\s/.test(deletedChar) && /\s/.test(userText.value[ind])) {
+        while (/\s/.test(userText.value[ind])) {
+            userText.value = userText.value.slice(0, -1);
+            --ind;
+        } 
+    }
+}
+
+/*This function checks the correctness of the text written by the user by comparing each new written character with the character 
+located on the same position of the correspondent model word. If these two are the same, the character from the model text becomes green. 
+If not, it becomes red. If a written word becomes longer than the correspondent model word, no character is coloured. If a character is erased 
+from the written text, the already coloured character from the model text located on the right side of the current cursor position loses its colour.*/
+function checkLetter(e) {
+    let input = userText.value, ind = userText.value.length - 1, lg = ind - newWordLimit[wordsCnt - 1];
+    let modelLg = wordLimit[wordsCnt] - (wordLimit[wordsCnt - 1] + 1), modelInd = wordLimit[wordsCnt - 1] + lg + modelOffset;
+    if (e.inputType === "insertText" && lg <= modelLg && !/\s/.test(textArray[modelInd].innerText) && input[ind] != textArray[modelInd].innerText) {
+        textArray[modelInd].classList.remove("correct"); 
+        textArray[modelInd].classList.add("wrong");
+    } else if (e.inputType === "insertText" && lg <= modelLg && !/\s/.test(textArray[modelInd].innerText)) {
+        textArray[modelInd].classList.add("correct");    
+    } else if (e.inputType === "deleteContentBackward" && lg <= modelLg) {
+        textArray[modelInd + 1].classList.remove("wrong");
+        textArray[modelInd + 1].classList.remove("correct"); 
+    }
+    modelOffset = 0;
+}
+
+/*This function compares each new written word with the correspondent model word. If the written word is correct, it will receive a green background. 
+If it's wrong, it will receive a red background. If the user deletes the white space after a word, the background of that word disappears. 
+The function also counts the number of correct words.*/
+function checkWord(e) {
+    let colour = " ", input = userText.value, ind = userText.value.length - 1;
+    let lg = ind - newWordLimit[wordsCnt - 1], modelInd = wordLimit[wordsCnt - 1] + lg;
+    if (e.inputType === "insertText" && /\s/.test(input[ind]) && !doubleSpace &&
+    input.substring(newWordLimit[wordsCnt - 1] + 1, ind) === text.substring(wordLimit[wordsCnt - 1] + 1, wordLimit[wordsCnt])) {
+        colour = "#d6f0b6";
+        ++correctWords;
         colourWord(colour);
-    } else if (wordDelimiter[wordsCnt] > ind + 1) {
+    } else if (e.inputType === "insertText" && /\s/.test(input[ind]) && !doubleSpace)  {
+        colour = "#fac8c8";
+        colourWord(colour);
+    } else if (e.inputType === "deleteContentBackward" && modelInd === wordLimit[wordsCnt] - 1) {
         colour = "#00000000";
         colourWord(colour);
-        --wordsCnt;
-        if (!isCorrect) {
+        if (input.substring(newWordLimit[wordsCnt - 1] + 1, ind + 1) === text.substring(wordLimit[wordsCnt - 1] + 1, wordLimit[wordsCnt])) {
             --correctWords;
         }
-    }
+    } 
 }
 
 /*Each new written word from the model text receives a background. 
-If characters from that word are erased in the user text box, the background disappears*/
+If characters from that word are erased from the user text, the background disappears.*/
 function colourWord(colour) {
-    for (let i = wordDelimiter[wordsCnt - 1] + 1; i <= wordDelimiter[wordsCnt] - 1; ++i) {
+    for (let i = wordLimit[wordsCnt - 1] + 1; i <= wordLimit[wordsCnt] - 1; ++i) {
         textArray[i].style.background = colour;
     }
 }
 
-//The game is restarted
+/*If the last character from a word is deleted, the number of written words decreases.*/ 
+function decrementWords(e) {
+    let input = userText.value, ind = userText.value.length - 1;
+    if (e.inputType === "deleteContentBackward" && !/\s/.test(deletedChar) && (ind === -1 || /\s/.test(input[ind]))) {
+        --wordsCnt;
+    }
+}
+
+//The user is prevented to delete a text selection. Text deletion can only be made one character at a time.
+function preventSelectionDeletion() {
+    let sel = userText.value.substring(userText.selectionStart, userText.selectionEnd);
+    if (sel != "") {
+        userText.onkeydown = function () {return false};
+    } else {
+        userText.onkeydown = function () {return true};
+    }
+}
+
+//The user cannot edit in the middle of the text when the mousedown event is active.
+function preventEditWhenMouseDown() {
+    userText.readOnly = true;
+}
+
+//The user can start edit again if the click is released.
+function startEdit() {
+    userText.readOnly = false;
+}
+
+//The user is prevented from typing or deletion text inside the written word. This can only be done at the end of the text.
+function moveCursorAtEnd() {
+    if (userText.selectionStart != userText.value.length) {
+        userText.selectionStart = userText.value.length
+    }
+}
+
+//The game is restarted.
 function restart () {
     window.location.reload();
 }
 
-/*The game ends and the pop-up occurs displaying the statistics of the game
- finished and the button to start a new game*/
+//The game ends and the pop-up occurs displaying the statistics of the game  finished and the button to start a new game.
 function endGame() {
     clearInterval(timer);
     document.getElementsByClassName("wpm")[0].innerText = "WPM: " + wordsCnt;
-    document.getElementsByClassName("accuracy")[0].innerText = "ACCURACY: " +  parseInt(correctWords / wordsCnt * 100) + "%";
+    document.getElementsByClassName("correctWords")[0].innerText = "CORRECT WORDS: " + correctWords;
+    if (wordsCnt === 0) {
+        document.getElementsByClassName("accuracy")[0].innerText = "ACCURACY: 0%";
+    } else {
+        document.getElementsByClassName("accuracy")[0].innerText = "ACCURACY: " +  parseInt(correctWords / wordsCnt * 100) + "%";
+    }
     document.getElementsByClassName("pop-up")[0].style.visibility = "visible";
+    userText.removeEventListener("keydown", startGame);
+    userText.disabled = true;
 }
-
+ 
 userText.addEventListener("contextmenu", event => event.preventDefault());
+userText.addEventListener("copy", event => event.preventDefault());
+userText.addEventListener("cut", event => event.preventDefault());
+userText.addEventListener("paste", event => event.preventDefault());
+userText.addEventListener("dragstart", event => event.preventDefault());
 userText.addEventListener("keydown", startGame);
+userText.addEventListener("keydown", getDeletedChar);
+userText.addEventListener("input", setNewWordLimits);
+userText.addEventListener("input", incrementWords);
+userText.addEventListener("input", preventDoubleSpace);
+userText.addEventListener("input", jumpIndex);
 userText.addEventListener("input", checkLetter);
 userText.addEventListener("input", checkWord);
+userText.addEventListener("input", decrementWords);
+userText.addEventListener("mousemove", preventSelectionDeletion);
+userText.addEventListener("click", moveCursorAtEnd);
+userText.addEventListener("mousedown", preventEditWhenMouseDown);
+userText.addEventListener("mouseup", startEdit);
