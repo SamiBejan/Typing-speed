@@ -43,7 +43,7 @@ function runTime() {
         prefSec = '0';
     }
     document.querySelector(".time").innerText = "00:" + prefSec + second;
-    if (second === 40) {
+    if (second === 0) {
         endGame();
     }
 }
@@ -72,7 +72,6 @@ function preventDoubleSpace(e) {
         doubleSpace = false;
     }
 }
-
 
 /*With each new white space added, we mark the end of the current written word.
 If a white space is deleted, it is also deleted from the array.*/
@@ -228,4 +227,3 @@ userText.addEventListener("mousemove", preventSelectionDeletion);
 userText.addEventListener("click", moveCursorAtEnd);
 userText.addEventListener("mousedown", preventEditWhenMouseDown);
 userText.addEventListener("mouseup", startEdit);
-
